@@ -3,8 +3,10 @@ var ordlist; //ordinals list
 var ords;    //number of enumerated ordinals
 var fseq;    //fundamental sequences
 var fseqi;   //fundamental sequences reference
-var N=3;     //orders
-var zeros = Array.zeros([N]); // all zeros
+var K=4;     //orders
+var C=3;     //coeficient
+var N=3;     //fundamental sequences
+var zeros = Array.zeros([K]); // all zeros
 // draw
 var gS;
 var gW;
@@ -15,12 +17,23 @@ var isRequestedDraw=true;
 var radius=5;
 /* entry point */
 window.onload=function(){
+  setcoefs();
   initOrd();
   initPhysics();
   initDraw();
   setInterval(procAll, 1000/frameRate);
 }
-
+var resetAll=function(){
+  setcoefs();
+  initOrd();
+  initPhysics();
+  initDraw();
+}
+var setcoefs=function(){
+  K=parseInt(form1.orders.value);
+  C=parseInt(form1.coefs.value);
+  N=parseInt(form1.funds.value);
+}
 /* gameloop */
 var procAll=function(){
   procPhysics();
@@ -35,9 +48,9 @@ var dims=2;
 var q;
 var v;
 var eps=1e-20;
-var Frep=0.1;
-var Fatt=0.1;
-var physicalradius=0.5;
+var Frep=0.01;
+var Fatt=0.01;
+var physicalradius=0.2;
 var speedcoef =0.01;
 var speeddecay=0.5;
 var procPhysics=function(){
@@ -60,10 +73,12 @@ var procPhysics=function(){
     if(fseqi[o].length!=0){
       for(var n=0;n<N;n++){
         var o2=fseqi[o][n];
-        var dq=sub(q[o],q[o2]);
-        var l=abs(dq);
-        f[o ]=add(f[o ], mulkv(-Fatt/(l+eps),dq));
-        f[o2]=add(f[o2], mulkv(+Fatt/(l+eps),dq));
+        if(o2!=-1){
+          var dq=sub(q[o],q[o2]);
+          var l=abs(dq);
+          f[o ]=add(f[o ], mulkv(-Fatt/(l+eps),dq));
+          f[o2]=add(f[o2], mulkv(+Fatt/(l+eps),dq));
+        }
       }
     }
   }
@@ -100,7 +115,7 @@ var initDraw=function(){
   gS = new Geom(2,[[0,0],[outcanvas.width,outcanvas.height]]);
   gW = new Geom(2,[[-1,-1],[+1,+1]]);
 }
-var fontsize=20;
+var fontsize=12;
 var procDraw=function(){
   //clear
   ctx.font = String(fontsize)+'px Segoe UI';
@@ -110,21 +125,23 @@ var procDraw=function(){
     //fundamental sequence connection
     if(!fseqi[o].eq([])){
       for(var n=0;n<N;n++){
-        //line
-        var s0 = transPos(q[o],gW,gS);
-        var s1 = transPos(q[fseqi[o][n]],gW,gS);
-        var sm = add(mulkv(0.9,s0),mulkv(0.1,s1));
-        ctx.strokeStyle="rgba(0.5,0.5,0.5,0.2)";
-        ctx.beginPath();
-        ctx.moveTo(Math.floor(s0[0]),Math.floor(s0[1]));
-        ctx.lineTo(Math.floor(s1[0]),Math.floor(s1[1]));
-        ctx.stroke();
-        //arrow
-        ctx.strokeStyle="rgba(0,0,255,1)";
-        ctx.beginPath();
-        ctx.moveTo(Math.floor(s0[0]),Math.floor(s0[1]));
-        ctx.lineTo(Math.floor(sm[0]),Math.floor(sm[1]));
-        ctx.stroke();
+        if(fseqi[o][n]!=-1){
+          //line
+          var s0 = transPos(q[o],gW,gS);
+          var s1 = transPos(q[fseqi[o][n]],gW,gS);
+          var sm = add(mulkv(0.9,s0),mulkv(0.1,s1));
+          ctx.strokeStyle="rgba(0.5,0.5,0.5,0.2)";
+          ctx.beginPath();
+          ctx.moveTo(Math.floor(s0[0]),Math.floor(s0[1]));
+          ctx.lineTo(Math.floor(s1[0]),Math.floor(s1[1]));
+          ctx.stroke();
+          //arrow
+          ctx.strokeStyle="rgba(0,0,255,1)";
+          ctx.beginPath();
+          ctx.moveTo(Math.floor(s0[0]),Math.floor(s0[1]));
+          ctx.lineTo(Math.floor(sm[0]),Math.floor(sm[1]));
+          ctx.stroke();
+        }
       }
     }
     
@@ -149,9 +166,9 @@ var initOrd=function(){
   while(true){ //enumerating loop
     ordlist.push(c.clone()); //push
     c[0]++; //inclement
-    for(var k=0;k<N;k++){ // carry up loop
-      if(c[k]==N){
-        if(k==N-1){
+    for(var k=0;k<K;k++){ // carry up loop
+      if(c[k]==C){
+        if(k==K-1){
           end = true;
           break;
         }else{
@@ -167,12 +184,12 @@ var initOrd=function(){
   ords=ordlist.length;
   fseq=new Array(ords);
   for(var o=0;o<ords;o++){
-    fseq[o]=new Array(N);
+    fseq[o]=new Array(K);
     var ord = ordlist[o];
     if(ord[0]==0 && !ord.eq(zeros)){//limit ordinal
       //find smallest omega
       var p;
-      for(p=1;p<N;p++){
+      for(p=1;p<K;p++){
         if(ord[p]!=0) break;
       }
       for(var n=0;n<N;n++){
@@ -222,7 +239,7 @@ var initOrd=function(){
    ord = ƒ°k (ƒÖ^k)ord[k] */
 var ord2str=function(ord){
   var out=""; //output
-  var N=ord.length;
+  var K=ord.length;
   
   var tmp=ord.clone(); //for checking [*,0,0,0,0]
   tmp[0]=0;
@@ -230,7 +247,7 @@ var ord2str=function(ord){
     out=ord[0];
   }else{//ordinal number
     var terms=0;
-    for(var k=N-1;k>0;k--){
+    for(var k=K-1;k>0;k--){
       var plus=(terms>0)?"+":"";
       if(ord[k]!=0){
         if(k>1&&ord[k]>1){

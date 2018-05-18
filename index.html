@@ -21,6 +21,14 @@
 --></style></head>
 <body>
 <h1>autoana</h1>
+<form name=form1>
+<table>
+<tr><td>orders:</td><td><input type=text name="orders" value="3"></td></tr>
+<tr><td>coefs:</td><td><input type=text name="coefs"  value="3"></td></tr>
+<tr><td>fundamental sequences:</td><td><input type=text name="funds"  value="3"><input type=button value="set" onclick="javascript:setcoefs();resetAll();">
+</td></tr>
+</table>
+</form>
 <canvas id='outcanvas' width=600 height=600></canvas>
 <textarea id='debug' rows=40 cols=130 class='myinput' style='display:display'>
 </textarea>
