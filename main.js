@@ -8,7 +8,7 @@ var ordlist; //ordinals list
 var ords;    //number of enumerated ordinals
 var fseq;    //fundamental sequences
 var fseqi;   //fundamental sequences reference
-var N=3;     //orders
+var N=4;     //orders
 var zeros = Array.zeros([N]); // all zeros
 //draw
 var gS;
@@ -102,11 +102,15 @@ var procDraw=function(){
   ctx.clearRect(gS.w[0][0], gS.w[0][1],gS.w[1][0]-1,gS.w[1][1]-1);
   
   for(var o=0;o<ords;o++){
+    //circle
     var s=transPos(q[o],gW,gS);
     ctx.strokeStyle="black";
     ctx.beginPath();
     ctx.arc(Math.floor(s[0]),Math.floor(s[1]),radius,0,2*Math.PI,false);
     ctx.stroke();
+    //text
+    ctx.fillText(ord2str(ordlist[o]),Math.floor(s[0]),Math.floor(s[1]));
+    //fundamental sequence connection
     if(!fseqi[o].eq([])){
       for(var n=0;n<N;n++){
         var s0 = transPos(q[o],gW,gS);
