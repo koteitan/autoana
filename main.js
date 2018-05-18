@@ -106,6 +106,7 @@ var initPhysics=function(){
       q[o][d]=Math.random()*2-1;
       v[o][d]=0;
     }
+    q[o][0]=(o/ords)*2-1;
   }
 }
 var initDraw=function(){
@@ -130,7 +131,7 @@ var procDraw=function(){
           var s0 = transPos(q[o],gW,gS);
           var s1 = transPos(q[fseqi[o][n]],gW,gS);
           var sm = add(mulkv(0.9,s0),mulkv(0.1,s1));
-          ctx.strokeStyle="rgba(0.5,0.5,0.5,0.2)";
+          ctx.strokeStyle="rgba(0,0,0,0.2)";
           ctx.beginPath();
           ctx.moveTo(Math.floor(s0[0]),Math.floor(s0[1]));
           ctx.lineTo(Math.floor(s1[0]),Math.floor(s1[1]));
