@@ -1,10 +1,109 @@
+// draw
+var canvas;
+var ctx;
+var frameRate = 60; // [fps]
+var isRequestedDraw=true;
+// ordinals
 var ordlist; //ordinals list
+var ords;    //number of enumerated ordinals
 var fseq;    //fundamental sequences
-var N=4;     //dimension
+var fseqi;   //fundamental sequences reference
+var N=3;     //orders
 var zeros = Array.zeros([N]); // all zeros
-
+//draw
+var gS;
+var gW;
+var radius=10;
 /* entry point */
-var dothemall=function(){
+window.onload=function(){
+  initOrd();
+  initPhysics();
+  initDraw();
+  setInterval(procAll, 1000/frameRate);
+}
+
+/* gameloop */
+var procAll=function(){
+  procPhysics();
+  if(isRequestedDraw){
+    procDraw();
+    isRequestedDraw = true;
+  }
+}
+
+/* physics */
+var dims=2;
+var q;
+var v;
+var eps=1e-20;
+var Frep=0.1;
+var Fatt=0.1;
+var procPhysics=function(){
+  var f=Array.zeros([ords, dims]);
+  //repulsion
+  for(var o1=0;o1<ords;o1++){
+    for(var o2=0;o2<ords;o2++){
+      if(o1!=o2){
+        var dq=sub(q[o1],q[o2]);
+        var l=abs(dq);
+        if(l<radius){
+          f[o1]=add(f[o1], mulkv(+Frep/(l+eps),dq));
+        }
+      }
+    }
+  }
+  //attraction
+  for(var o=0;o<ords;o++){
+    if(fseqi[o].length!=0){
+      for(var n=0;n<N;n++){
+        var dq=sub(q[o],q[fseqi[o][n]]);
+        var l=abs(dq);
+        f[o]=add(f[o], mulkv(-Fatt/(l+eps),dq));
+      }
+    }
+  }
+  //move
+  v=add(v,f);
+  v=mulkv(0.9,v);
+  q=add(q,v);
+  //wall reflection
+  for(var o=0;o<ords;o++){
+    if(q[o][0]<gW.w[0][0]){q[o][0]=gW.w[0][0];v[o][0]=+Math.abs(v[o][0]);}
+    if(q[o][1]<gW.w[0][1]){q[o][1]=gW.w[0][1];v[o][1]=+Math.abs(v[o][1]);}
+    if(q[o][0]>gW.w[1][0]){q[o][0]=gW.w[1][0];v[o][0]=-Math.abs(v[o][0]);}
+    if(q[o][1]>gW.w[1][1]){q[o][1]=gW.w[1][1];v[o][1]=-Math.abs(v[o][1]);}
+  }
+}
+// init
+var initPhysics=function(){
+  q=new Array(ords);
+  v=new Array(ords);
+  for(var o=0;o<ords;o++){
+    q[o]=new Array(dims);
+    v[o]=new Array(dims);
+    for(var d=0;d<dims;d++){
+      q[o][d]=Math.random()*2-1;
+      v[o][d]=0;
+    }
+  }
+}
+var initDraw=function(){
+  canvas = document.getElementById("outcanvas");
+  if(!canvas||!canvas.getContext) return false;
+  ctx = canvas.getContext('2d');
+  gS = new Geom(2,[[0,0],[outcanvas.width,outcanvas.height]]);
+  gW = new Geom(2,[[-1,-1],[+1,+1]]);
+}
+var procDraw=function(){
+  for(var o=0;o<ords;o++){
+    var s=transPos(q[o],gW,gS);
+    ctx.strokeStyle="black";
+    ctx.beginPath();
+    ctx.arc(Math.floor(s[0]),Math.floor(s[0]),radius,0,2*Math.PI,false);
+    ctx.stroke();
+  }
+}
+var initOrd=function(){
   var c=zeros.clone();
 
   //enumerating analyzed ordinals
@@ -28,7 +127,7 @@ var dothemall=function(){
   }//enumerating loop
 
   //making fundamental sequences
-  var ords=ordlist.length;
+  ords=ordlist.length;
   fseq=new Array(ords);
   for(var o=0;o<ords;o++){
     fseq[o]=new Array(N);
@@ -48,6 +147,20 @@ var dothemall=function(){
       fseq[o]=[];
     }
   }    
+
+  //convert fseq to reference
+  fseqi=new Array(ords);
+  for(var o=0;o<ords;o++){
+    if(!fseq[o].eq([])){
+      fseqi[o]=new Array(N);
+      for(var n=0;n<N;n++){
+        fseqi[o][n] = ordlist.findIndex(function(e,i,a){return e.eq(fseq[o][n])});
+      }
+    }else{
+      fseqi[o]=[];
+    }
+  }
+
   //print
   debug.value="";
   for(var o=0;o<ords;o++){
@@ -64,6 +177,8 @@ var dothemall=function(){
       debug.value+="\n";
     }
   }
+  
+  
 }
 
 /* ord2str(ord) = String expression of ordinal ord 
@@ -105,5 +220,4 @@ var ord2str=function(ord){
   return out;
 }
 
-//var ctx     = outcanvas.getContext('2d');
 

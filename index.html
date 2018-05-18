@@ -3,6 +3,8 @@
 <meta http-equiv="Content-type" content="text/html; charset=sjis">
 <meta http-equiv="Content-Style-Type" content="text/css">
 <script type="text/javascript" src="./exarray.js"></script>
+<script type="text/javascript" src="./matrix.js"></script>
+<script type="text/javascript" src="./geom.js"></script>
 <script type="text/javascript" src="./main.js"></script>
 <style><!--
   body{font-family:Segoe UI}
@@ -15,9 +17,11 @@
   .tdbutton{border-width:1px;border-style:solid;border-color:white;height:30px;width:30px}
   hr{border-style:solid}
   .console{font-family:MS Gothic;color:white;background-color:black}
+  canvas{border-style:solid;border-width:1px}
 --></style></head>
-<body onload='javascript:dothemall();'>
+<body>
 <h1>autoana</h1>
+<canvas id='outcanvas' width=600 height=600></canvas>
 <textarea id='debug' rows=40 cols=130 class='myinput' style='display:display'>
 </textarea>
 </body>
