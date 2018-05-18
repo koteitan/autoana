@@ -180,7 +180,7 @@ var sub = function(a0,a1){
   if(a0[0] instanceof Array){
     for(var i=0;i<a0.length;i++){
       b[i]=new Array(a0[0].length);
-      for(var j=0;j<b.length;j++){
+      for(var j=0;j<b[i].length;j++){
         b[i][j]=a0[i][j]-a1[i][j];
       }
     }
@@ -196,7 +196,7 @@ var add = function(a0,a1){
   if(a0[0] instanceof Array){
     for(var i=0;i<a0.length;i++){
       b[i]=new Array(a0[0].length);
-      for(var j=0;j<b.length;j++){
+      for(var j=0;j<b[i].length;j++){
         b[i][j] = a0[i][j] + a1[i][j];
       }
     }
