@@ -103,6 +103,18 @@ Array.zeros = function(s){
   };
   return f(s,0);
 }
+Array.ones = function(s){
+  var f=function(s, d){
+    var a = new Array(s[d]);
+    if(d==s.length-1){
+      for(var i=0;i<s[d];i++) a[i] = 0;
+    }else{
+      for(var i=0;i<s[d];i++) a[i] = f(s,d+1);
+    }
+    return a;
+  };
+  return f(s,0);
+}
 Array.prototype.toString = function(){
   var s="[";
   var i=0;
@@ -116,7 +128,7 @@ Array.prototype.toString = function(){
   }
   return s;
 }
-Array.prototype.isEqual = function(a){
+Array.prototype.eq = function(a){
   if(this.length!=a.length) return false;
   for(var i=0;i<this.length;i++){
     if(this[i] instanceof Array){
