@@ -1,18 +1,18 @@
-// draw
-var canvas;
-var ctx;
-var frameRate = 60; // [fps]
-var isRequestedDraw=true;
 // ordinals
 var ordlist; //ordinals list
 var ords;    //number of enumerated ordinals
 var fseq;    //fundamental sequences
 var fseqi;   //fundamental sequences reference
-var N=4;     //orders
+var N=3;     //orders
 var zeros = Array.zeros([N]); // all zeros
-//draw
+// draw
 var gS;
 var gW;
+var canvas;
+var ctx;
+var frameRate = 60; // [fps]
+var isRequestedDraw=true;
+var radius=5;
 /* entry point */
 window.onload=function(){
   initOrd();
@@ -35,11 +35,11 @@ var dims=2;
 var q;
 var v;
 var eps=1e-20;
-var Frep=0.001;
-var Fatt=1;
-var radius=10;
+var Frep=0.1;
+var Fatt=0.1;
+var physicalradius=0.5;
 var speedcoef =0.01;
-var speeddecay=0.9;
+var speeddecay=0.5;
 var procPhysics=function(){
   var f=Array.zeros([ords, dims]);
   //repulsion
@@ -48,8 +48,9 @@ var procPhysics=function(){
       if(o1!=o2){
         var dq=sub(q[o1],q[o2]);
         var l=abs(dq);
-        if(l<radius){
-          f[o1]=add(f[o1], mulkv(+Frep/(l+eps),dq));
+        if(l<physicalradius){
+          f[o1]=add(f[o1], mulkv(+Frep/(l*l+eps),dq));
+          f[o2]=add(f[o2], mulkv(-Frep/(l*l+eps),dq));
         }
       }
     }
@@ -58,9 +59,11 @@ var procPhysics=function(){
   for(var o=0;o<ords;o++){
     if(fseqi[o].length!=0){
       for(var n=0;n<N;n++){
-        var dq=sub(q[o],q[fseqi[o][n]]);
+        var o2=fseqi[o][n];
+        var dq=sub(q[o],q[o2]);
         var l=abs(dq);
-        f[o]=add(f[o], mulkv(-Fatt/(l+eps),dq));
+        f[o ]=add(f[o ], mulkv(-Fatt/(l+eps),dq));
+        f[o2]=add(f[o2], mulkv(+Fatt/(l+eps),dq));
       }
     }
   }
@@ -71,10 +74,10 @@ var procPhysics=function(){
   q=add  (q         ,v);
   //wall reflection
   for(var o=0;o<ords;o++){
-    if(q[o][0]<gW.w[0][0]){q[o][0]=gW.w[0][0];v[o][0]=+Math.abs(v[o][0]);}
-    if(q[o][1]<gW.w[0][1]){q[o][1]=gW.w[0][1];v[o][1]=+Math.abs(v[o][1]);}
-    if(q[o][0]>gW.w[1][0]){q[o][0]=gW.w[1][0];v[o][0]=-Math.abs(v[o][0]);}
-    if(q[o][1]>gW.w[1][1]){q[o][1]=gW.w[1][1];v[o][1]=-Math.abs(v[o][1]);}
+    if(q[o][0]<gW.w[0][0]+0.05){q[o][0]=gW.w[0][0]+0.05;v[o][0]=+Math.abs(v[o][0]);}
+    if(q[o][1]<gW.w[0][1]+0.05){q[o][1]=gW.w[0][1]+0.05;v[o][1]=+Math.abs(v[o][1]);}
+    if(q[o][0]>gW.w[1][0]-0.05){q[o][0]=gW.w[1][0]-0.05;v[o][0]=-Math.abs(v[o][0]);}
+    if(q[o][1]>gW.w[1][1]-0.05){q[o][1]=gW.w[1][1]-0.05;v[o][1]=-Math.abs(v[o][1]);}
   }
 }
 // init
@@ -97,31 +100,44 @@ var initDraw=function(){
   gS = new Geom(2,[[0,0],[outcanvas.width,outcanvas.height]]);
   gW = new Geom(2,[[-1,-1],[+1,+1]]);
 }
+var fontsize=20;
 var procDraw=function(){
   //clear
+  ctx.font = String(fontsize)+'px Segoe UI';
   ctx.clearRect(gS.w[0][0], gS.w[0][1],gS.w[1][0]-1,gS.w[1][1]-1);
   
   for(var o=0;o<ords;o++){
-    //circle
-    var s=transPos(q[o],gW,gS);
-    ctx.strokeStyle="black";
-    ctx.beginPath();
-    ctx.arc(Math.floor(s[0]),Math.floor(s[1]),radius,0,2*Math.PI,false);
-    ctx.stroke();
-    //text
-    ctx.fillText(ord2str(ordlist[o]),Math.floor(s[0]),Math.floor(s[1]));
     //fundamental sequence connection
     if(!fseqi[o].eq([])){
       for(var n=0;n<N;n++){
+        //line
         var s0 = transPos(q[o],gW,gS);
         var s1 = transPos(q[fseqi[o][n]],gW,gS);
-        ctx.strokeStyle="black";
+        var sm = add(mulkv(0.9,s0),mulkv(0.1,s1));
+        ctx.strokeStyle="rgba(0.5,0.5,0.5,0.2)";
         ctx.beginPath();
         ctx.moveTo(Math.floor(s0[0]),Math.floor(s0[1]));
         ctx.lineTo(Math.floor(s1[0]),Math.floor(s1[1]));
         ctx.stroke();
+        //arrow
+        ctx.strokeStyle="rgba(0,0,255,1)";
+        ctx.beginPath();
+        ctx.moveTo(Math.floor(s0[0]),Math.floor(s0[1]));
+        ctx.lineTo(Math.floor(sm[0]),Math.floor(sm[1]));
+        ctx.stroke();
       }
     }
+    
+    var s=transPos(q[o],gW,gS);
+    if(0){
+      //circle
+      ctx.strokeStyle="black";
+      ctx.beginPath();
+      ctx.arc(Math.floor(s[0]),Math.floor(s[1]),radius,0,2*Math.PI,false);
+      ctx.stroke();
+    }
+    //text
+    ctx.fillText(ord2str(ordlist[o]),Math.floor(s[0]),Math.floor(s[1]));
   }
 }
 var initOrd=function(){
