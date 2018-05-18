@@ -1,6 +1,6 @@
 var ordlist; //ordinals list
 var fseq;    //fundamental sequences
-var N=5;     //dimension
+var N=4;     //dimension
 var zeros = Array.zeros([N]); // all zeros
 
 /* entry point */
@@ -45,14 +45,24 @@ var dothemall=function(){
         fseq[o][n][p-1]=n;
       }
     }else{//successor ordinal
-      fseq[o][n]=[];
+      fseq[o]=[];
     }
   }    
   //print
   debug.value="";
   for(var o=0;o<ords;o++){
     var ord = ordlist[o];
-    debug.value+=ord.toString()+"="+ord2str(ord)+"\n";
+    debug.value+=ord2str(ord);
+    if(!fseq[o].eq([])){
+      debug.value+=" = {";
+      for(var n=0;n<N;n++){
+        debug.value+=ord2str(fseq[o][n]);
+        if(n!=N-1)debug.value+=", ";
+      }
+      debug.value+=", c}\n";
+    }else{
+      debug.value+="\n";
+    }
   }
 }
 
