@@ -13,7 +13,6 @@ var zeros = Array.zeros([N]); // all zeros
 //draw
 var gS;
 var gW;
-var radius=10;
 /* entry point */
 window.onload=function(){
   initOrd();
@@ -36,8 +35,11 @@ var dims=2;
 var q;
 var v;
 var eps=1e-20;
-var Frep=0.1;
-var Fatt=0.1;
+var Frep=0.001;
+var Fatt=1;
+var radius=10;
+var speedcoef =0.01;
+var speeddecay=0.9;
 var procPhysics=function(){
   var f=Array.zeros([ords, dims]);
   //repulsion
@@ -63,9 +65,10 @@ var procPhysics=function(){
     }
   }
   //move
-  v=add(v,f);
-  v=mulkv(0.9,v);
-  q=add(q,v);
+  f=mulkx(speedcoef ,f);
+  v=add  (v         ,f);
+  v=mulkx(speeddecay,v);
+  q=add  (q         ,v);
   //wall reflection
   for(var o=0;o<ords;o++){
     if(q[o][0]<gW.w[0][0]){q[o][0]=gW.w[0][0];v[o][0]=+Math.abs(v[o][0]);}
@@ -95,12 +98,26 @@ var initDraw=function(){
   gW = new Geom(2,[[-1,-1],[+1,+1]]);
 }
 var procDraw=function(){
+  //clear
+  ctx.clearRect(gS.w[0][0], gS.w[0][1],gS.w[1][0]-1,gS.w[1][1]-1);
+  
   for(var o=0;o<ords;o++){
     var s=transPos(q[o],gW,gS);
     ctx.strokeStyle="black";
     ctx.beginPath();
-    ctx.arc(Math.floor(s[0]),Math.floor(s[0]),radius,0,2*Math.PI,false);
+    ctx.arc(Math.floor(s[0]),Math.floor(s[1]),radius,0,2*Math.PI,false);
     ctx.stroke();
+    if(!fseqi[o].eq([])){
+      for(var n=0;n<N;n++){
+        var s0 = transPos(q[o],gW,gS);
+        var s1 = transPos(q[fseqi[o][n]],gW,gS);
+        ctx.strokeStyle="black";
+        ctx.beginPath();
+        ctx.moveTo(Math.floor(s0[0]),Math.floor(s0[1]));
+        ctx.lineTo(Math.floor(s1[0]),Math.floor(s1[1]));
+        ctx.stroke();
+      }
+    }
   }
 }
 var initOrd=function(){
